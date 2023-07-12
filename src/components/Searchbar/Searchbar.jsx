@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { useState } from 'react';
 import { BsSearch } from 'react-icons/bs';
 
 import {
@@ -8,43 +8,36 @@ import {
   StyledInput,
 } from './Searchbar.styled';
 
-class Searchbar extends Component {
-  state = { value: '' };
+export const Searchbar = ({ handleSubmit }) => {
+  const [value, setValue] = useState('');
 
-  onChange = ({ target }) => {
-    this.setState({ value: target.value });
+  const onChange = ({ target }) => {
+    setValue(target.value);
   };
 
-  onSubmit = e => {
-    const { value } = this.state;
+  const onSubmit = e => {
     e.preventDefault();
 
-    this.props.handleSubmit(value);
-    this.setState({ value: '' });
+    handleSubmit(value);
+    setValue('');
   };
 
-  render() {
-    const { value } = this.state;
+  return (
+    <StyledHeader>
+      <StyledForm onSubmit={onSubmit}>
+        <StyledButton type="submit">
+          {/* <StyledLabel> */}
+          <BsSearch />
+          {/* </StyledLabel> */}
+        </StyledButton>
 
-    return (
-      <StyledHeader>
-        <StyledForm onSubmit={this.onSubmit}>
-          <StyledButton type="submit">
-            {/* <StyledLabel> */}
-            <BsSearch />
-            {/* </StyledLabel> */}
-          </StyledButton>
-
-          <StyledInput
-            onChange={this.onChange}
-            type="text"
-            placeholder="Search images and photos"
-            value={value}
-          />
-        </StyledForm>
-      </StyledHeader>
-    );
-  }
-}
-
-export default Searchbar;
+        <StyledInput
+          onChange={onChange}
+          type="text"
+          placeholder="Search images and photos"
+          value={value}
+        />
+      </StyledForm>
+    </StyledHeader>
+  );
+};
