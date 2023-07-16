@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import Notiflix from 'notiflix';
 
 import { Searchbar } from './Searchbar/Searchbar';
@@ -67,12 +67,12 @@ export const App = () => {
     };
 
     fetchDataOnLoadMore();
-  }, [page]);
+  }, [search, page]);
 
   useEffect(() => {
     if (page === 1) return;
     window.scrollBy({ top: 520, behavior: 'smooth' });
-  }, [images]);
+  }, [page, images]);
 
   const handleSubmit = query => {
     if (query === '') {
