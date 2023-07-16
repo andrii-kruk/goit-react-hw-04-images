@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyledButton } from './Button.styled';
 
-const Button = ({ children, loadMore }) => {
+export const Button = ({ children, loadMore }) => {
   return (
     <StyledButton type="button" onClick={loadMore}>
       {children}
@@ -9,4 +9,3 @@ const Button = ({ children, loadMore }) => {
   );
 };
 
-export default Button;

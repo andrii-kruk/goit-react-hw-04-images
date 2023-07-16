@@ -3,16 +3,16 @@ import { StyledModal, StyledOverlay } from './Modal.styled';
 
 export const Modal = ({ content, onClose }) => {
   useEffect(() => {
+    const onEscape = e => {
+      if (e.code === 'Escape') return onClose();
+    };
+
     window.addEventListener('keydown', onEscape);
 
     return () => {
       window.removeEventListener('keydown', onEscape);
     };
   }, []);
-
-  const onEscape = e => {
-    if (e.code === 'Escape') return onClose();
-  };
 
   const closeModal = ({ target, currentTarget }) => {
     if (target === currentTarget) return onClose();

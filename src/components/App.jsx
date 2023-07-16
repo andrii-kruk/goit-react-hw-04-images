@@ -1,11 +1,11 @@
-import React, { Component } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Notiflix from 'notiflix';
 
 import { Searchbar } from './Searchbar/Searchbar';
-import ImageGallery from './ImageGallery/ImageGallery';
-import Loader from './Loader/Loader';
-import {Modal} from './Modal/Modal';
-import Button from './Button/Button';
+import { ImageGallery } from './ImageGallery/ImageGallery';
+import { Loader } from './Loader/Loader';
+import { Modal } from './Modal/Modal';
+import { Button } from './Button/Button';
 
 import { StyledContainer, StyledTitle } from './App.styled';
 import { getImages, PER_PAGE } from 'services/api';
@@ -17,131 +17,116 @@ const STATUS = {
   REJECTED: 'rejected',
 };
 
-class App extends Component {
-  state = {
-    search: '',
-    page: 1,
-    totalPages: 1,
-    images: [],
-    modal: { isOpen: false, img: null },
-    status: STATUS.IDLE,
-  };
+export const App = () => {
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [images, setImages] = useState([]);
+  const [modal, setModal] = useState({ isOpen: false, img: null });
+  const [status, setStatus] = useState(STATUS.IDLE);
 
-  async componentDidUpdate(_, prevState) {
-    const { search, page, images, totalPages } = this.state;
+  useEffect(() => {
+    if (search === '') return;
 
-    if (prevState.images.length < images.length && page !== 1) {
-      const scrollOptions = {
-        top: 630,
-        behavior: 'smooth',
-      };
-      window.scrollBy(scrollOptions);
-    }
-
-    if (prevState.search !== search && search !== '') {
+    const fetchData = async () => {
       try {
-        this.setState({ status: STATUS.PENDING });
+        setStatus(STATUS.PENDING);
+
+        const { hits, totalHits } = await getImages(search);
+
+        setImages(hits);
+
+        setTotalPages(Math.ceil(totalHits / PER_PAGE));
+        setStatus(STATUS.RESOLVED);
+      } catch (error) {
+        setStatus(STATUS.REJECTED);
+      } finally {
+        window.scrollTo({ top: 0, left: 0 });
+      }
+    };
+
+    fetchData();
+  }, [search]);
+
+  useEffect(() => {
+    if (page === 1) return;
+
+    const fetchDataOnLoadMore = async () => {
+      try {
+        setStatus(STATUS.PENDING);
 
         const { hits, totalHits } = await getImages(search, page);
-        this.setState({
-          images: hits,
-          totalPages: Math.ceil(totalHits / PER_PAGE),
-          status: STATUS.RESOLVED,
-        });
+
+        setImages(state => [...state, ...hits]);
+
+        setTotalPages(Math.ceil(totalHits / PER_PAGE));
+        setStatus(STATUS.RESOLVED);
       } catch (error) {
-        this.setState({ status: STATUS.REJECTED });
+        setStatus(STATUS.REJECTED);
       }
-      return;
-    }
+    };
 
-    if (prevState.page !== page && page !== 1) {
-      try {
-        this.setState({ status: STATUS.PENDING });
+    fetchDataOnLoadMore();
+  }, [page]);
 
-        const { hits } = await getImages(search, page);
-        this.setState({
-          images: [...prevState.images, ...hits],
-          status: STATUS.RESOLVED,
-        });
+  useEffect(() => {
+    if (page === 1) return;
+    window.scrollBy({ top: 520, behavior: 'smooth' });
+  }, [images]);
 
-        if (page === totalPages)
-          return Notiflix.Notify.warning('This is last page!');
-      } catch (error) {
-        this.setState({ status: STATUS.REJECTED });
-      }
-    }
-  }
-
-  handleSubmit = search => {
-    if (search === '') {
+  const handleSubmit = query => {
+    if (query === '') {
       return Notiflix.Notify.warning('Please enter something.');
     }
-    if (search === this.state.search) {
+    if (query === search) {
       return Notiflix.Notify.warning('You entered the same query!');
     }
 
-    this.setState({
-      search,
-      page: 1,
-      totalPages: 1,
-    });
-  };
-  openModal = selectedImage => {
-    this.setState({
-      modal: { isOpen: true, img: selectedImage },
-    });
+    setSearch(query);
+    setPage(1);
+    setTotalPages(1);
   };
 
-  closeModal = () => {
-    this.setState({
-      modal: { isOpen: false, img: null },
-    });
-  };
-
-  onLoadMore = () => {
-    const { page, totalPages } = this.state;
-
+  const onLoadMore = () => {
     if (page !== totalPages) {
-      this.setState(prevState => ({
-        page: prevState.page + 1,
-        status: STATUS.PENDING,
-      }));
+      setPage(page + 1);
+      setStatus(STATUS.PENDING);
     }
   };
 
-  render() {
-    const { status, images, modal, page, totalPages } = this.state;
+  const openModal = selectedImage => {
+    setModal({ isOpen: true, img: selectedImage });
+  };
 
-    return (
-      <StyledContainer>
-        <Searchbar handleSubmit={this.handleSubmit} />
+  const closeModal = () => {
+    setModal({ isOpen: false, img: null });
+  };
 
-        {status === STATUS.IDLE && (
-          <StyledTitle>Look for something...</StyledTitle>
-        )}
+  return (
+    <StyledContainer>
+      <Searchbar handleSubmit={handleSubmit} />
 
-        {status === STATUS.PENDING && <Loader />}
+      {status === STATUS.IDLE && (
+        <StyledTitle>Look for something...</StyledTitle>
+      )}
 
-        {status === STATUS.REJECTED ||
-          (totalPages === 0 && (
-            <StyledTitle>Sorry! Something went wrong!</StyledTitle>
-          ))}
+      {status === STATUS.PENDING && <Loader />}
 
-        {images.length !== 0 && (
-          <>
-            <ImageGallery images={images} openModal={this.openModal} />
-            {totalPages !== page && totalPages !== 0 && (
-              <Button children={'Load more'} loadMore={this.onLoadMore} />
-            )}
-          </>
-        )}
+      {status === STATUS.REJECTED ||
+        (totalPages === 0 && (
+          <StyledTitle>Sorry! Something went wrong!</StyledTitle>
+        ))}
 
-        {modal.isOpen && (
-          <Modal content={modal.img} onClose={this.closeModal} />
-        )}
-      </StyledContainer>
-    );
-  }
-}
+      {images.length !== 0 && (
+        <>
+          <ImageGallery images={images} openModal={openModal} />
+          {totalPages !== page && totalPages !== 0 && (
+            <Button children={'Load more'} loadMore={onLoadMore} />
+          )}
+        </>
+      )}
 
-export default App;
+      {modal.isOpen && <Modal content={modal.img} onClose={closeModal} />}
+    </StyledContainer>
+  );
+};

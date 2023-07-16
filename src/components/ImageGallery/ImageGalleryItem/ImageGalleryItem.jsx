@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyledImage, StyledItem } from './ImageGalleryItem.styled';
 
-const ImageGalleryItem = ({ images, openModal }) => {
+export const ImageGalleryItem = ({ images, openModal }) => {
   return images.map(img => {
     return (
       <StyledItem key={img.id} onClick={() => openModal(img)}>
@@ -10,5 +10,3 @@ const ImageGalleryItem = ({ images, openModal }) => {
     );
   });
 };
-
-export default ImageGalleryItem;
