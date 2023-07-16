@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
 import Notiflix from 'notiflix';
 
-import Searchbar from './Searchbar/Searchbar';
+import { Searchbar } from './Searchbar/Searchbar';
 import ImageGallery from './ImageGallery/ImageGallery';
 import Loader from './Loader/Loader';
-import Modal from './Modal/Modal';
+import {Modal} from './Modal/Modal';
 import Button from './Button/Button';
 
 import { StyledContainer, StyledTitle } from './App.styled';
