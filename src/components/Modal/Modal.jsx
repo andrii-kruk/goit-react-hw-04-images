@@ -12,7 +12,7 @@ export const Modal = ({ content, onClose }) => {
     return () => {
       window.removeEventListener('keydown', onEscape);
     };
-  }, []);
+  }, [onClose]);
 
   const closeModal = ({ target, currentTarget }) => {
     if (target === currentTarget) return onClose();
