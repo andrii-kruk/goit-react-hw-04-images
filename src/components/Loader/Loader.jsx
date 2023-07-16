@@ -2,7 +2,7 @@ import { Oval } from 'react-loader-spinner';
 
 import { LoaderWrapper } from './Loader.styled';
 
-const Loader = () => {
+export const Loader = () => {
   return (
     <LoaderWrapper>
       <Oval
@@ -20,5 +20,3 @@ const Loader = () => {
     </LoaderWrapper>
   );
 };
-
-export default Loader;
